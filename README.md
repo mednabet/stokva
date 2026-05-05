@@ -36,6 +36,8 @@ cd backend
 install-windows.bat
 ```
 
+L'installer **détecte et installe automatiquement** Node.js, PostgreSQL et NSSM si absents (via `winget` ou téléchargement direct depuis les sites officiels). Aucun prérequis manuel — il vous suffit d'accepter l'UAC et d'attendre 5-10 min.
+
 Voir [`backend/README.md`](backend/README.md) pour la documentation complète, et [`MIGRATION.md`](MIGRATION.md) pour le guide de migration.
 
 ---

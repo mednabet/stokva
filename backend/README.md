@@ -83,16 +83,34 @@ sudo APP_DIR=/srv/stokva PORT=8000 bash install-vps.sh
 
 ### B) Windows (poste serveur)
 
-Prérequis (à installer manuellement avant) :
-- [Node.js 20+](https://nodejs.org)
-- [PostgreSQL 14+](https://www.postgresql.org/download/windows/)
-- (Optionnel) [NSSM](https://nssm.cc/) pour service Windows
+**Aucun prérequis manuel** — l'installer détecte et installe automatiquement Node.js, PostgreSQL et NSSM si absents.
 
 ```cmd
 install-windows.bat
 ```
 
-Le script demande : nom de base, utilisateur DB, mot de passe, port, génère `.env`, exécute migrations + seed, et crée un service Windows si NSSM est détecté.
+L'installer (le `.bat` lance le `.ps1` plus robuste) :
+
+1. Demande l'élévation UAC si nécessaire
+2. Détecte ou installe Node.js 20 LTS (via `winget` si dispo, sinon MSI direct depuis nodejs.org)
+3. Détecte ou installe PostgreSQL 16 (via `winget` ou EnterpriseDB installer)
+4. Génère un mot de passe aléatoire pour le superuser PostgreSQL (affiché à l'écran, à conserver pour pgAdmin)
+5. Crée la base `stokva` + utilisateur applicatif + permissions
+6. Génère `.env` avec mots de passe + JWT secret aléatoires
+7. `npm install`, applique les migrations, seed les données initiales
+8. Installe NSSM si absent et crée le service Windows `STOKVA` (démarrage automatique)
+9. Ouvre Swagger UI dans le navigateur
+
+**Durée** : 5-10 min selon connexion (~300 Mo téléchargés si Node.js + PostgreSQL absents).
+
+**Options PowerShell** (avancé) :
+```powershell
+.\install-windows.ps1 -Port 8000 -DbName mydb -DbUser myuser -SkipServiceInstall
+```
+
+**Si l'installation auto échoue** (rare) : suivre les liens manuels :
+- Node.js 20+ : https://nodejs.org
+- PostgreSQL 16 : https://www.postgresql.org/download/windows/
 
 ### C) Docker (recommandé pour test/dev)
 
