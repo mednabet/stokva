@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: stokva-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-stokva}
+      POSTGRES_USER: ${DB_USER:-stokva}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-stokva_change_me}
+    volumes:
+      - stokva_pgdata:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT_PUBLIC:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: stokva-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOST: 0.0.0.0
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-stokva}
+      DB_USER: ${DB_USER:-stokva}
+      DB_PASSWORD: ${DB_PASSWORD:-stokva_change_me}
+      JWT_SECRET: ${JWT_SECRET:-change_this_in_production}
+      JWT_EXPIRES_IN: 12h
+      JWT_REFRESH_EXPIRES_IN: 7d
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      WEIGHBRIDGE_ENABLED: ${WEIGHBRIDGE_ENABLED:-false}
+    ports:
+      - "${PORT:-3000}:3000"
+    # If pont-bascule on host, expose the device:
+    # devices:
+    #   - "/dev/ttyUSB0:/dev/ttyUSB0"
+
+  frontend:
+    image: nginx:alpine
+    container_name: stokva-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    volumes:
+      - ../../stokva:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+
+volumes:
+  stokva_pgdata:
+    driver: local

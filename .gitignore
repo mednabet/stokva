@@ -15,7 +15,7 @@ desktop.ini
 *.swo
 *~
 
-# Node (au cas où)
+# Node
 node_modules/
 package-lock.json
 
@@ -31,4 +31,20 @@ npm-debug.log*
 # Local config
 .env
 .env.local
+.env.*.local
 config.local.json
+
+# Backend-specific
+backend/node_modules/
+backend/.env
+backend/logs/
+backend/dist/
+backend/coverage/
+backend/docker/.env
+
+# Outputs / archives
+*.tar.gz
+*.zip
+!assets/**/*.png
+!assets/**/*.svg
+!assets/**/*.ico

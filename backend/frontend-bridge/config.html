@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STOKVA — Paramétrage</title>
+    <style>
+        :root { --indigo:#312E81; --cyan:#06B6D4; --violet:#6366F1;
+                --gray-50:#f9fafb; --gray-200:#e5e7eb; --gray-700:#374151; }
+        * { box-sizing:border-box; margin:0; padding:0; }
+        body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+               background:var(--gray-50); color:#111827; }
+        header { background:linear-gradient(135deg, var(--indigo), var(--violet));
+                 color:white; padding:1.25rem 2rem; display:flex;
+                 justify-content:space-between; align-items:center; }
+        header h1 { font-size:1.4rem; font-weight:700; }
+        header .powered { font-size:0.8rem; opacity:0.85; }
+        header .powered strong { color:#FBBF24; }
+        main { max-width:1200px; margin:2rem auto; padding:0 1.5rem; }
+        h2 { color:var(--indigo); margin-bottom:0.5rem; }
+        h2 + p { color:var(--gray-700); margin-bottom:1.5rem; font-size:0.95rem; }
+        .controls { display:flex; gap:1rem; margin-bottom:1.5rem; align-items:end; flex-wrap:wrap; }
+        .controls label { display:block; font-size:0.85rem; color:var(--gray-700); margin-bottom:0.25rem; font-weight:600; }
+        .controls select, .controls input { padding:0.5rem 0.75rem; border:1px solid var(--gray-200);
+                                            border-radius:6px; font-size:0.95rem; background:white; min-width:200px; }
+        .controls button { padding:0.55rem 1rem; background:var(--indigo); color:white; border:none;
+                           border-radius:6px; font-weight:600; cursor:pointer; }
+        .controls button:hover { background:#4338CA; }
+        table { width:100%; background:white; border-collapse:collapse; border-radius:8px; overflow:hidden;
+                box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+        th { background:var(--indigo); color:white; padding:0.75rem; text-align:left; font-weight:600; font-size:0.85rem; }
+        td { padding:0.65rem 0.75rem; border-top:1px solid var(--gray-200); font-size:0.9rem; }
+        tr.override td:first-child { border-left:3px solid var(--cyan); }
+        .badge { display:inline-block; padding:0.15rem 0.55rem; border-radius:999px; font-size:0.75rem; font-weight:600; }
+        .badge.company { background:#e5e7eb; color:#374151; }
+        .badge.depot { background:#dbeafe; color:#1e40af; }
+        .badge.article { background:#fef3c7; color:#92400e; }
+        .value { font-family:'SF Mono',Monaco,Consolas,monospace; background:#f3f4f6; padding:0.1rem 0.4rem; border-radius:4px; }
+        .actions { display:flex; gap:0.4rem; }
+        .actions button { padding:0.3rem 0.6rem; border:1px solid var(--gray-200); background:white;
+                          border-radius:5px; cursor:pointer; font-size:0.8rem; }
+        .actions button:hover { background:var(--gray-50); }
+        .actions button.danger { color:#dc2626; }
+        .toast { position:fixed; top:1rem; right:1rem; background:var(--indigo); color:white;
+                 padding:0.75rem 1.25rem; border-radius:8px; opacity:0; transition:opacity .3s; }
+        .toast.show { opacity:1; }
+        dialog { border:none; border-radius:12px; padding:0; max-width:480px; width:90%;
+                 box-shadow:0 20px 50px rgba(0,0,0,0.2); }
+        dialog::backdrop { background:rgba(0,0,0,0.4); }
+        dialog form { padding:1.5rem; }
+        dialog h3 { color:var(--indigo); margin-bottom:1rem; }
+        dialog label { display:block; font-size:0.85rem; font-weight:600; margin:0.75rem 0 0.25rem; }
+        dialog input, dialog textarea, dialog select {
+            width:100%; padding:0.5rem; border:1px solid var(--gray-200); border-radius:6px; font-size:0.95rem; }
+        dialog .row { display:flex; gap:0.5rem; justify-content:flex-end; margin-top:1.25rem; }
+        dialog button { padding:0.55rem 1rem; border-radius:6px; cursor:pointer; border:none; font-weight:600; }
+        dialog button.primary { background:var(--indigo); color:white; }
+        dialog button.cancel { background:#e5e7eb; color:#374151; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>STOKVA — Paramétrage</h1>
+        <div class="powered">powered by <strong>NETPROCESS</strong></div>
+    </div>
+    <div id="user-info" style="font-size:0.85rem; opacity:0.9"></div>
+</header>
+
+<main>
+    <h2>Paramètres effectifs</h2>
+    <p>
+        Les paramètres sont résolus avec la cascade <strong>Article &gt; Dépôt &gt; Société</strong>.
+        Sélectionnez un dépôt et/ou un article pour voir quelles valeurs s'appliquent réellement dans ce contexte.
+    </p>
+
+    <div class="controls">
+        <div>
+            <label for="depot-sel">Dépôt</label>
+            <select id="depot-sel">
+                <option value="">— aucun (société) —</option>
+            </select>
+        </div>
+        <div>
+            <label for="article-sel">Article</label>
+            <select id="article-sel">
+                <option value="">— aucun —</option>
+            </select>
+        </div>
+        <button id="reload-btn">Recharger</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Clé</th>
+                <th>Valeur effective</th>
+                <th>Source</th>
+                <th>Valeur société</th>
+                <th>Description</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+    </table>
+</main>
+
+<dialog id="edit-dialog">
+    <form id="edit-form">
+        <h3>Modifier le paramètre</h3>
+        <label>Clé</label>
+        <input type="text" id="edit-key" readonly>
+        <label>Niveau d'override</label>
+        <select id="edit-scope">
+            <option value="company">Société (global)</option>
+            <option value="depot">Dépôt sélectionné</option>
+            <option value="article">Article sélectionné</option>
+        </select>
+        <label>Valeur (JSON)</label>
+        <input type="text" id="edit-value" placeholder='ex: true, 100, "manuel", ["a","b"]'>
+        <small style="color:#6b7280; font-size:0.75rem">
+            Booléen : true / false &nbsp; Nombre : 100 &nbsp; Chaîne : "valeur" &nbsp; Liste : ["a","b"]
+        </small>
+        <div class="row">
+            <button type="button" class="cancel" id="cancel-btn">Annuler</button>
+            <button type="submit" class="primary">Enregistrer</button>
+        </div>
+    </form>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/api-client.js"></script>
+<script src="js/auth.js"></script>
+<script>
+(async function() {
+    if (!await Auth.guard('login.html')) return;
+    document.getElementById('user-info').textContent =
+        STOKVA.currentUser().username + ' (' + STOKVA.currentUser().role + ')';
+
+    const depotSel = document.getElementById('depot-sel');
+    const articleSel = document.getElementById('article-sel');
+    const tbody = document.getElementById('tbody');
+    const dialog = document.getElementById('edit-dialog');
+    const toast = document.getElementById('toast');
+
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    async function loadOptions() {
+        const [depots, articles] = await Promise.all([
+            STOKVA.depots.list({ limit: 200 }),
+            STOKVA.articles.list({ limit: 500 }),
+        ]);
+        for (const d of depots.items) {
+            depotSel.insertAdjacentHTML('beforeend', `<option value="${d.id}">${d.name}</option>`);
+        }
+        for (const a of articles.items) {
+            articleSel.insertAdjacentHTML('beforeend', `<option value="${a.id}">${a.name}</option>`);
+        }
+    }
+
+    async function loadSettings() {
+        const depotId = depotSel.value || null;
+        const articleId = articleSel.value || null;
+        const r = await STOKVA.config.getEffectiveAll(depotId, articleId);
+        tbody.innerHTML = '';
+        for (const it of r.items) {
+            const isOverride = it.source !== 'company';
+            const row = document.createElement('tr');
+            if (isOverride) row.classList.add('override');
+            row.innerHTML = `
+                <td><strong>${it.key}</strong></td>
+                <td><span class="value">${JSON.stringify(it.value)}</span></td>
+                <td><span class="badge ${it.source}">${it.source}</span></td>
+                <td><span class="value" style="opacity:0.7">${JSON.stringify(it.companyValue)}</span></td>
+                <td style="font-size:0.8rem; color:#6b7280">${it.description || ''}</td>
+                <td class="actions">
+                    <button data-key="${it.key}" data-value='${JSON.stringify(it.value)}' class="edit-btn">Modifier</button>
+                    ${isOverride ? `<button data-key="${it.key}" data-source="${it.source}" class="del-btn danger">Réinitialiser</button>` : ''}
+                </td>`;
+            tbody.appendChild(row);
+        }
+
+        for (const btn of tbody.querySelectorAll('.edit-btn')) {
+            btn.addEventListener('click', () => openEdit(btn.dataset.key, btn.dataset.value));
+        }
+        for (const btn of tbody.querySelectorAll('.del-btn')) {
+            btn.addEventListener('click', () => resetSetting(btn.dataset.key, btn.dataset.source));
+        }
+    }
+
+    function openEdit(key, currentValue) {
+        document.getElementById('edit-key').value = key;
+        document.getElementById('edit-value').value = currentValue;
+        // Default to current scope context
+        document.getElementById('edit-scope').value =
+            articleSel.value ? 'article' : (depotSel.value ? 'depot' : 'company');
+        dialog.showModal();
+    }
+
+    document.getElementById('cancel-btn').addEventListener('click', () => dialog.close());
+
+    document.getElementById('edit-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const key = document.getElementById('edit-key').value;
+        const scope = document.getElementById('edit-scope').value;
+        let value;
+        try {
+            value = JSON.parse(document.getElementById('edit-value').value);
+        } catch {
+            showToast('JSON invalide');
+            return;
+        }
+        let scopeId = null;
+        if (scope === 'depot') scopeId = parseInt(depotSel.value);
+        if (scope === 'article') scopeId = parseInt(articleSel.value);
+        if (scope !== 'company' && !scopeId) {
+            showToast('Sélectionnez un ' + scope + ' d\'abord');
+            return;
+        }
+        try {
+            await STOKVA.config.setSetting(scope, scopeId, key, value);
+            showToast('Paramètre enregistré');
+            dialog.close();
+            await loadSettings();
+        } catch (err) {
+            showToast('Erreur : ' + err.message);
+        }
+    });
+
+    async function resetSetting(key, source) {
+        if (!confirm(`Réinitialiser "${key}" au niveau ${source} ?`)) return;
+        let scopeId = null;
+        if (source === 'depot') scopeId = parseInt(depotSel.value);
+        if (source === 'article') scopeId = parseInt(articleSel.value);
+        try {
+            await STOKVA.config.unsetSetting(source, scopeId, key);
+            showToast('Override supprimé');
+            await loadSettings();
+        } catch (err) {
+            showToast('Erreur : ' + err.message);
+        }
+    }
+
+    depotSel.addEventListener('change', loadSettings);
+    articleSel.addEventListener('change', loadSettings);
+    document.getElementById('reload-btn').addEventListener('click', loadSettings);
+
+    // Auto-refresh on WS config change
+    STOKVA.on('config.changed', () => {
+        showToast('Paramètres modifiés à distance');
+        loadSettings();
+    });
+
+    await loadOptions();
+    await loadSettings();
+})();
+</script>
+
+</body>
+</html>

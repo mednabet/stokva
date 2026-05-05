@@ -4,16 +4,39 @@
 
 # Gestion des Dépôts de Stockage
 
-**Application web standalone moderne pour le suivi complet de vos opérations de dépôt.**
+**Application web pour le suivi complet de vos opérations de dépôt.**
 
-[![Version](https://img.shields.io/badge/version-1.0.0-312e81?style=for-the-badge)](https://github.com/mednabet/stokva/releases)
+[![Version](https://img.shields.io/badge/version-2.0.0-312e81?style=for-the-badge)](https://github.com/mednabet/stokva/releases)
 [![License](https://img.shields.io/badge/license-MIT-06b6d4?style=for-the-badge)](LICENSE)
-[![Made with](https://img.shields.io/badge/made%20with-Vanilla%20JS-6366f1?style=for-the-badge)]()
+[![Made with](https://img.shields.io/badge/made%20with-Vanilla%20JS%20%2B%20Node.js-6366f1?style=for-the-badge)]()
 [![By](https://img.shields.io/badge/by-NETPROCESS-1e1b4b?style=for-the-badge)](https://github.com/mednabet)
 
-[Installation rapide](#-installation-rapide-windows) · [Fonctionnalités](#-fonctionnalités) · [Démo en ligne](https://mednabet.github.io/stokva/) · [Charte graphique](assets/brand/BRAND-GUIDELINES.md)
+[Installation rapide](#-installation-rapide-windows) · [Fonctionnalités](#-fonctionnalités) · [Démo en ligne](https://mednabet.github.io/stokva/) · [Charte graphique](assets/brand/BRAND-GUIDELINES.md) · [Migration v1→v2](MIGRATION.md)
 
 </div>
+
+---
+
+## 🆕 Version 2.0 — Backend multi-utilisateurs
+
+> STOKVA peut désormais fonctionner en **mode multi-utilisateurs avec backend PostgreSQL** (dossier [`backend/`](backend/)).
+> Le mode v1 (localStorage standalone) reste **entièrement supporté** — la v2 est additive.
+
+### En un coup d'œil
+
+| Mode | Stockage | Multi-utilisateurs | Pont-bascule série | Audit |
+|------|----------|--------------------|--------------------|-------|
+| **v1** (mode standalone) | localStorage navigateur | ❌ | ⚠️ via simulation | ❌ |
+| **v2** (mode backend) | PostgreSQL | ✅ + WebSocket | ✅ RS232/USB | ✅ complet |
+
+### Démarrer la v2
+
+```cmd
+cd backend
+install-windows.bat
+```
+
+Voir [`backend/README.md`](backend/README.md) pour la documentation complète, et [`MIGRATION.md`](MIGRATION.md) pour le guide de migration.
 
 ---
 

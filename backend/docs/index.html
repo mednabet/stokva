@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STOKVA — Gestion des Dépôts de Stockage</title>
+    <style>
+        :root {
+            --indigo: #312E81;
+            --cyan: #06B6D4;
+            --violet: #6366F1;
+            --gray-900: #111827;
+            --gray-700: #374151;
+            --gray-500: #6b7280;
+            --gray-200: #e5e7eb;
+            --gray-50: #f9fafb;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            color: var(--gray-900);
+            line-height: 1.6;
+            background: var(--gray-50);
+        }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+
+        /* Hero */
+        header.hero {
+            background: linear-gradient(135deg, var(--indigo) 0%, var(--violet) 50%, var(--cyan) 100%);
+            color: white;
+            padding: 5rem 0 4rem;
+            text-align: center;
+        }
+        header.hero .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.18);
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.05em;
+        }
+        header.hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.02em;
+        }
+        header.hero p.tagline {
+            font-size: 1.25rem;
+            opacity: 0.95;
+            max-width: 720px;
+            margin: 0 auto 2rem;
+        }
+        header.hero .powered {
+            font-size: 0.85rem;
+            opacity: 0.85;
+        }
+        header.hero .powered strong {
+            color: #FBBF24;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        /* Sections */
+        section {
+            padding: 4rem 0;
+        }
+        section.alt { background: white; }
+
+        h2 {
+            font-size: 2rem;
+            color: var(--indigo);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        h2 + .lead {
+            color: var(--gray-500);
+            font-size: 1.05rem;
+            margin-bottom: 2.5rem;
+        }
+        h3 {
+            color: var(--indigo);
+            margin: 0.75rem 0 0.5rem;
+            font-size: 1.15rem;
+        }
+
+        /* Features grid */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+        }
+        .feature {
+            background: white;
+            padding: 1.75rem;
+            border-radius: 12px;
+            border: 1px solid var(--gray-200);
+            transition: transform .2s, box-shadow .2s;
+        }
+        .feature:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(49, 46, 129, 0.08);
+        }
+        .feature .icon {
+            width: 48px; height: 48px;
+            background: linear-gradient(135deg, var(--violet), var(--cyan));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 1rem;
+            color: white; font-size: 1.5rem; font-weight: bold;
+        }
+        .feature p { color: var(--gray-700); font-size: 0.95rem; }
+
+        /* Modules table */
+        table.modules {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,.06);
+        }
+        table.modules th {
+            background: var(--indigo);
+            color: white;
+            padding: 0.9rem 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        table.modules td {
+            padding: 0.85rem 1rem;
+            border-top: 1px solid var(--gray-200);
+            color: var(--gray-700);
+        }
+        table.modules td:first-child { font-weight: 600; color: var(--indigo); }
+        table.modules code {
+            background: var(--gray-50);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        /* Architecture diagram */
+        .arch {
+            background: var(--gray-900);
+            color: #cbd5e1;
+            padding: 2rem;
+            border-radius: 12px;
+            font-family: 'SF Mono', Monaco, Consolas, monospace;
+            font-size: 0.85rem;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        /* Tech stack */
+        .stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+        }
+        .stack .chip {
+            background: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 999px;
+            border: 1px solid var(--gray-200);
+            font-weight: 600;
+            color: var(--indigo);
+            font-size: 0.95rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--gray-900);
+            color: #cbd5e1;
+            padding: 3rem 0 2rem;
+            text-align: center;
+        }
+        footer .brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+        footer .brand span { color: var(--cyan); }
+        footer p { font-size: 0.9rem; opacity: 0.8; margin-bottom: 0.5rem; }
+        footer .copy { font-size: 0.8rem; opacity: 0.5; margin-top: 1.5rem; }
+    </style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="container">
+        <span class="badge">v1.0 — Backend PostgreSQL</span>
+        <h1>STOKVA</h1>
+        <p class="tagline">
+            Gestion complète des dépôts de stockage : réceptions, expéditions,
+            pont-bascule, transferts inter-dépôts et reporting réglementaire.
+        </p>
+        <p class="powered">powered by <strong>NETPROCESS</strong></p>
+    </div>
+</header>
+
+<section>
+    <div class="container">
+        <h2>Une refonte multi-utilisateurs</h2>
+        <p class="lead">
+            STOKVA passe d'une application mono-poste (localStorage) à une vraie solution
+            client-serveur PostgreSQL, conçue pour l'usage simultané sur plusieurs sites.
+        </p>
+
+        <div class="features">
+            <div class="feature">
+                <div class="icon">⚖</div>
+                <h3>Pont-bascule série réelle</h3>
+                <p>
+                    Lecture RS232/USB en continu (Toledo, Mettler, génériques).
+                    Mode 1 ou 2 passes, simulation intégrée pour tester sans matériel.
+                </p>
+            </div>
+            <div class="feature">
+                <div class="icon">📊</div>
+                <h3>Registre G0 + exports</h3>
+                <p>
+                    Conforme norme marocaine EN 07-O04. Export Excel et PDF
+                    en un clic, filtrage par mois et par dépôt.
+                </p>
+            </div>
+            <div class="feature">
+                <div class="icon">⚡</div>
+                <h3>Temps réel WebSocket</h3>
+                <p>
+                    Toutes les actions (réceptions, expéditions, pesées) diffusées
+                    instantanément à tous les postes connectés.
+                </p>
+            </div>
+            <div class="feature">
+                <div class="icon">🔐</div>
+                <h3>API REST + JWT</h3>
+                <p>
+                    Documentation Swagger, authentification par tokens,
+                    4 rôles RBAC (admin / responsable / opérateur / consultation).
+                </p>
+            </div>
+            <div class="feature">
+                <div class="icon">↔</div>
+                <h3>Transferts inter-dépôts</h3>
+                <p>
+                    Workflow envoi → en transit → réception. Tolère les
+                    réceptions partielles, tracé complet des mouvements.
+                </p>
+            </div>
+            <div class="feature">
+                <div class="icon">🇲🇦</div>
+                <h3>Conformité Maroc</h3>
+                <p>
+                    ICE, RC, IF, CNSS, Patente sur la société et les partenaires.
+                    Devise MAD, numérotation séquentielle annuelle.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="alt">
+    <div class="container">
+        <h2>Modules livrés</h2>
+        <p class="lead">Onze modules couvrant l'ensemble du cycle de vie d'un dépôt.</p>
+
+        <table class="modules">
+            <thead>
+                <tr><th>Module</th><th>Endpoint</th><th>Fonction principale</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Auth</td><td><code>/api/auth</code></td><td>Login JWT, refresh, change-password</td></tr>
+                <tr><td>Partners</td><td><code>/api/partners</code></td><td>Fournisseurs / clients / mixtes</td></tr>
+                <tr><td>Articles</td><td><code>/api/articles</code></td><td>Catalogue + alertes stock min</td></tr>
+                <tr><td>Depots</td><td><code>/api/depots</code></td><td>Dépôts + stock par site</td></tr>
+                <tr><td>Vehicles</td><td><code>/api/vehicles</code></td><td>Camions + chauffeurs</td></tr>
+                <tr><td>Receptions</td><td><code>/api/receptions</code></td><td>BR avec impact stock contrôlé</td></tr>
+                <tr><td>Expeditions</td><td><code>/api/expeditions</code></td><td>BL avec contrôle disponibilité</td></tr>
+                <tr><td>Transfers</td><td><code>/api/transfers</code></td><td>Transferts inter-dépôts en transit</td></tr>
+                <tr><td>Weighbridge</td><td><code>/api/weighbridge</code></td><td>Pont-bascule + pesées</td></tr>
+                <tr><td>Reports</td><td><code>/api/reports</code></td><td>G0, dashboard, statistiques</td></tr>
+                <tr><td>Settings</td><td><code>/api/settings</code></td><td>Société, utilisateurs, audit</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section>
+    <div class="container">
+        <h2>Architecture</h2>
+        <p class="lead">Stack moderne, déployable en local, sur VPS ou via Docker.</p>
+
+<div class="arch">┌──────────────────────────────────────────────────────────┐
+│                    Navigateurs (postes)                  │
+│   index.html / pesee.html / réceptions / expéditions     │
+└────────────┬─────────────────────────┬───────────────────┘
+             │ HTTP REST               │ WebSocket
+             │ /api/*                  │ /ws?token=…
+┌────────────▼─────────────────────────▼───────────────────┐
+│                   Express + WS Hub                       │
+│  • Auth JWT (access + refresh)                           │
+│  • RBAC (4 rôles)                                        │
+│  • Audit log + rate-limit + Swagger                      │
+└────────────┬─────────────────────────┬───────────────────┘
+             │                         │
+   ┌─────────▼─────────┐    ┌──────────▼────────┐
+   │   PostgreSQL 16   │    │  Pont-bascule     │
+   │   (stockage)      │    │  (RS232 / USB)    │
+   └───────────────────┘    └───────────────────┘</div>
+
+        <div style="margin-top:2.5rem">
+            <h3 style="text-align:center;margin-bottom:1.25rem">Stack technique</h3>
+            <div class="stack">
+                <span class="chip">Node.js 20</span>
+                <span class="chip">Express 4</span>
+                <span class="chip">PostgreSQL 16</span>
+                <span class="chip">JWT</span>
+                <span class="chip">WebSocket (ws)</span>
+                <span class="chip">bcrypt</span>
+                <span class="chip">ExcelJS</span>
+                <span class="chip">PDFKit</span>
+                <span class="chip">SerialPort</span>
+                <span class="chip">Swagger / OpenAPI</span>
+                <span class="chip">Docker</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="alt">
+    <div class="container">
+        <h2>Déploiement adaptatif</h2>
+        <p class="lead">Trois modes prêts à l'emploi, scripts d'installation fournis.</p>
+
+        <div class="features">
+            <div class="feature">
+                <div class="icon">🐧</div>
+                <h3>VPS Linux</h3>
+                <p>
+                    <code>install-vps.sh</code> — installe Node, PostgreSQL,
+                    crée un service systemd, configure nginx.
+                </p>
+            </div>
+            <div class="feature">
+                <div class="icon">🪟</div>
+                <h3>Windows</h3>
+                <p>
+                    <code>install-windows.bat</code> — détecte les prérequis,
+                    crée la base, installe en service Windows via NSSM.
+                </p>
+            </div>
+            <div class="feature">
+                <div class="icon">🐳</div>
+                <h3>Docker</h3>
+                <p>
+                    <code>install-docker.sh</code> — orchestre Postgres,
+                    backend et frontend nginx en quelques secondes.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="container">
+        <div class="brand">NET<span>PROCESS</span></div>
+        <p>Développement & intégration sur mesure</p>
+        <p>STOKVA — Gestion des Dépôts de Stockage</p>
+        <p class="copy">© 2026 NETPROCESS — Licence MIT</p>
+    </div>
+</footer>
+
+</body>
+</html>
