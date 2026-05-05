@@ -1,0 +1,34 @@
+# Backups
+*.json.bak
+backup_*.json
+netprocess_backup_*.json
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node (au cas où)
+node_modules/
+package-lock.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary
+*.tmp
+*.temp
+~$*
+
+# Local config
+.env
+.env.local
+config.local.json

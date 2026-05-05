@@ -1,0 +1,52 @@
+# =====================================================
+# Déploiement automatique sur GitHub Pages
+# Permet d'avoir l'application accessible en ligne
+# à l'adresse : https://mednabet.github.io/stokva/
+# =====================================================
+#
+# Pour activer :
+# 1. Settings du dépôt → Pages
+# 2. Source : "GitHub Actions"
+# 3. Push sur main → déploiement automatique
+#
+# IMPORTANT : Avec GitHub Pages, les données utilisateur
+# restent stockées dans le navigateur de chaque visiteur
+# (localStorage). Aucune donnée n'est envoyée au serveur.
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

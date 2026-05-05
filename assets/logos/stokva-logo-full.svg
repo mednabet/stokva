@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 280" width="680" height="280">
+  <title>STOKVA — Gestion des Dépôts</title>
+  <desc>Logo principal STOKVA avec cube isométrique indigo/cyan et wordmark</desc>
+  <defs>
+    <linearGradient id="topFace" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#0891b2"/>
+    </linearGradient>
+    <linearGradient id="leftFace" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5"/>
+      <stop offset="100%" stop-color="#3730a3"/>
+    </linearGradient>
+    <linearGradient id="rightFace" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#4338ca"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(60, 60)">
+    <polygon points="20,60 80,90 80,160 20,130" fill="url(#leftFace)"/>
+    <polygon points="80,90 140,60 140,130 80,160" fill="url(#rightFace)"/>
+    <polygon points="20,60 80,30 140,60 80,90" fill="url(#topFace)"/>
+    <polygon points="80,55 95,70 88,70 88,82 72,82 72,70 65,70" fill="#ffffff" opacity="0.95"/>
+    <line x1="20" y1="60" x2="80" y2="30" stroke="#a5f3fc" stroke-width="1" opacity="0.6"/>
+    <line x1="80" y1="30" x2="140" y2="60" stroke="#a5f3fc" stroke-width="1" opacity="0.6"/>
+  </g>
+  <text x="240" y="155" font-family="'Outfit', system-ui, sans-serif" font-size="68" font-weight="800" fill="#1e1b4b" letter-spacing="-2">STOKVA</text>
+  <text x="242" y="185" font-family="'Outfit', system-ui, sans-serif" font-size="14" font-weight="500" fill="#0891b2" letter-spacing="6">DEPOT MANAGEMENT</text>
+  <line x1="242" y1="200" x2="500" y2="200" stroke="#e0e7ff" stroke-width="1"/>
+  <text x="242" y="220" font-family="'Outfit', system-ui, sans-serif" font-size="11" font-weight="400" fill="#64748b" letter-spacing="1">by NETPROCESS</text>
+</svg>

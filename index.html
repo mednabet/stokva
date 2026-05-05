@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#312e81">
+<meta name="description" content="STOKVA — Gestion complète des dépôts de stockage. Réceptions, expéditions, pont-bascule, traçabilité. Par NETPROCESS.">
+<title>STOKVA — Gestion des Dépôts</title>
+
+<!-- Favicons -->
+<link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+
+<!-- Styles -->
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style-extras.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+<!-- ============= ÉCRAN DE CONNEXION ============= -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-bg"></div>
+  <div class="login-container">
+    <div class="login-brand">
+      <img src="assets/logos/stokva-logo-full.svg" alt="STOKVA" class="login-logo">
+      <p class="login-tagline">Gestion des Dépôts de Stockage</p>
+    </div>
+    <form id="loginForm" class="login-form">
+      <div class="form-group">
+        <label for="loginUser"><i class="fas fa-user"></i> Identifiant</label>
+        <input type="text" id="loginUser" autocomplete="username" required>
+      </div>
+      <div class="form-group">
+        <label for="loginPass"><i class="fas fa-lock"></i> Mot de passe</label>
+        <input type="password" id="loginPass" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn-primary btn-block">
+        <i class="fas fa-sign-in-alt"></i> Se connecter
+      </button>
+      <div id="loginError" class="login-error"></div>
+      <div class="login-hint">
+        <i class="fas fa-info-circle"></i>
+        Compte par défaut : <strong>admin</strong> / <strong>admin</strong>
+      </div>
+    </form>
+    <div class="login-footer">© 2026 <strong>STOKVA</strong> by NETPROCESS — Tous droits réservés</div>
+  </div>
+</div>
+
+<!-- ============= APPLICATION PRINCIPALE ============= -->
+<div id="app" class="app hidden">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <img src="assets/logos/stokva-logo-horizontal-dark.svg" alt="STOKVA" class="sidebar-logo-img">
+      </div>
+      <button class="sidebar-close" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" data-page="dashboard"><i class="fas fa-chart-line"></i><span>Tableau de bord</span></a>
+      <a class="nav-item" data-page="reception"><i class="fas fa-truck-loading"></i><span>Réceptions</span></a>
+      <a class="nav-item" data-page="expedition"><i class="fas fa-truck-fast"></i><span>Expéditions</span></a>
+      <a class="nav-item" data-page="weighing"><i class="fas fa-weight-scale"></i><span>Pont-bascule</span></a>
+      <a class="nav-item" data-page="stock"><i class="fas fa-boxes-stacked"></i><span>Stock & Articles</span></a>
+      <a class="nav-item" data-page="depots"><i class="fas fa-warehouse"></i><span>Dépôts</span></a>
+      <a class="nav-item" data-page="partners"><i class="fas fa-handshake"></i><span>Partenaires</span></a>
+      <a class="nav-item" data-page="vehicles"><i class="fas fa-truck"></i><span>Véhicules</span></a>
+      <a class="nav-item" data-page="reports"><i class="fas fa-file-export"></i><span>Rapports</span></a>
+      <div class="nav-section" data-admin>Administration</div>
+      <a class="nav-item" data-page="users" data-admin><i class="fas fa-users-cog"></i><span>Utilisateurs</span></a>
+      <a class="nav-item" data-page="settings" data-admin><i class="fas fa-sliders"></i><span>Paramètres</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="userAvatar">A</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">Admin</div>
+          <div class="user-role" id="userRole">Administrateur</div>
+        </div>
+        <button class="btn-icon" onclick="logout()" title="Déconnexion"><i class="fas fa-right-from-bracket"></i></button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- HEADER MOBILE -->
+  <header class="topbar">
+    <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="topbar-title" id="topbarTitle">Tableau de bord</div>
+    <div class="topbar-actions">
+      <button class="btn-icon" onclick="toggleTheme()" title="Thème"><i class="fas fa-moon"></i></button>
+    </div>
+  </header>
+
+  <!-- CONTENU PRINCIPAL -->
+  <main class="main-content" id="mainContent">
+    <!-- Le contenu est injecté dynamiquement -->
+  </main>
+</div>
+
+<!-- MODAL CONTAINER -->
+<div id="modalContainer"></div>
+
+<!-- TOAST NOTIFICATIONS -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- LIBRARIES -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.0/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<!-- APP MODULES -->
+<script src="js/storage.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/components.js"></script>
+<script src="js/components-extras.js"></script>
+<script src="js/pages/dashboard.js"></script>
+<script src="js/pages/reception.js"></script>
+<script src="js/pages/expedition.js"></script>
+<script src="js/pages/weighing.js"></script>
+<script src="js/pages/stock.js"></script>
+<script src="js/pages/depots.js"></script>
+<script src="js/pages/partners.js"></script>
+<script src="js/pages/vehicles.js"></script>
+<script src="js/pages/reports.js"></script>
+<script src="js/pages/users.js"></script>
+<script src="js/pages/settings.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "name": "STOKVA — Gestion des Dépôts",
+  "short_name": "STOKVA",
+  "description": "Gestion complète des dépôts de stockage : réceptions, expéditions, pont-bascule.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#312e81",
+  "orientation": "any",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "assets/icons/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/favicon-256x256.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

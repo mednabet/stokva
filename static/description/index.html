@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STOKVA — Gestion des Dépôts de Stockage · by NETPROCESS</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/icons/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #312e81;
+    --primary-dark: #1e1b4b;
+    --accent: #06b6d4;
+    --accent-light: #22d3ee;
+    --indigo: #6366f1;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --bg: #f8fafc;
+    --bg-alt: #f1f5f9;
+    --card: #ffffff;
+    --border: #e2e8f0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .container { max-width: 1140px; margin: 0 auto; padding: 32px 24px; }
+
+  /* === HERO === */
+  .hero {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 35%, #4338ca 75%, #06b6d4 130%);
+    color: white;
+    padding: 72px 48px 80px;
+    border-radius: 28px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 48px;
+    box-shadow: 0 30px 80px -20px rgba(49, 46, 129, 0.45);
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(34, 211, 238, 0.18), transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -10%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.2), transparent 70%);
+    pointer-events: none;
+  }
+  .hero-content { position: relative; z-index: 1; }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    margin-bottom: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+  .hero-badge::before { content: '●'; color: var(--accent-light); font-size: 10px; }
+
+  .hero-logo-svg {
+    width: 88px; height: 88px;
+    margin: 0 auto 20px;
+    display: block;
+    filter: drop-shadow(0 8px 24px rgba(34, 211, 238, 0.3));
+  }
+  .hero h1 {
+    font-size: 64px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    margin-bottom: 16px;
+    line-height: 1.05;
+  }
+  .hero h1 span {
+    background: linear-gradient(135deg, #22d3ee 0%, #67e8f9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    font-size: 19px;
+    opacity: 0.92;
+    max-width: 720px;
+    margin: 0 auto 32px;
+    font-weight: 400;
+  }
+  .hero-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-size: 13px;
+    opacity: 0.85;
+  }
+  .hero-meta span { display: inline-flex; align-items: center; gap: 6px; }
+
+  /* === FEATURE GRID === */
+  .section-title {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  .section-heading {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--primary-dark);
+    margin-bottom: 40px;
+    letter-spacing: -0.02em;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 64px;
+  }
+  .card {
+    background: var(--card);
+    border-radius: 18px;
+    padding: 32px 28px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    border: 1px solid var(--border);
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -12px rgba(49, 46, 129, 0.15);
+    border-color: rgba(99, 102, 241, 0.3);
+  }
+  .card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    font-size: 26px;
+    color: white;
+  }
+  .icon-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); }
+  .icon-accent  { background: linear-gradient(135deg, var(--accent), #0891b2); }
+  .icon-indigo  { background: linear-gradient(135deg, var(--indigo), #4338ca); }
+  .icon-success { background: linear-gradient(135deg, #10b981, #059669); }
+  .icon-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+  .icon-violet  { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+
+  .card h3 { font-size: 19px; font-weight: 700; margin-bottom: 8px; color: var(--text); letter-spacing: -0.01em; }
+  .card p  { font-size: 14px; color: var(--text-muted); }
+
+  /* === FEATURE LIST === */
+  .features-block {
+    background: var(--card);
+    border-radius: 24px;
+    padding: 56px 48px;
+    margin-bottom: 56px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    border: 1px solid var(--border);
+  }
+  .feature-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin-top: 32px;
+  }
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    background: var(--bg-alt);
+    border-radius: 12px;
+    transition: all 0.15s;
+  }
+  .feature-item:hover {
+    background: #eef2ff;
+    transform: translateX(2px);
+  }
+  .feature-check {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    background: var(--gradient-accent, linear-gradient(135deg, #06b6d4, #0891b2));
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .feature-text { font-size: 14px; color: var(--text); font-weight: 500; }
+
+  /* === CTA === */
+  .cta {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+    color: white;
+    border-radius: 24px;
+    padding: 56px 48px;
+    text-align: center;
+    margin-bottom: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+  .cta h2 { font-size: 32px; font-weight: 800; margin-bottom: 14px; letter-spacing: -0.02em; }
+  .cta p  { font-size: 16px; opacity: 0.85; max-width: 580px; margin: 0 auto 24px; }
+  .cta-creds {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(6, 182, 212, 0.15);
+    border: 1px solid rgba(34, 211, 238, 0.3);
+    padding: 12px 20px;
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+
+  /* === FOOTER === */
+  .footer {
+    text-align: center;
+    padding: 32px 24px;
+    color: var(--text-muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+    margin-top: 32px;
+  }
+  .footer strong { color: var(--primary); font-weight: 700; }
+  .footer .divider { margin: 0 8px; opacity: 0.5; }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 640px) {
+    .hero { padding: 48px 24px 56px; }
+    .hero h1 { font-size: 42px; }
+    .hero p { font-size: 16px; }
+    .features-block, .cta { padding: 32px 24px; }
+    .section-heading { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ============= HERO ============= -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">PROPULSÉ PAR NETPROCESS</div>
+
+      <svg class="hero-logo-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="lf-l" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#4f46e5"/>
+          </linearGradient>
+          <linearGradient id="rf-l" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#818cf8"/><stop offset="100%" stop-color="#6366f1"/>
+          </linearGradient>
+          <linearGradient id="tf-l" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#22d3ee"/><stop offset="100%" stop-color="#06b6d4"/>
+          </linearGradient>
+        </defs>
+        <g transform="translate(8, 10)">
+          <polygon points="6,18 24,27 24,46 6,38" fill="url(#lf-l)"/>
+          <polygon points="24,27 42,18 42,38 24,46" fill="url(#rf-l)"/>
+          <polygon points="6,18 24,9 42,18 24,27" fill="url(#tf-l)"/>
+          <polygon points="24,16 29,21 26.5,21 26.5,25 21.5,25 21.5,21 19,21" fill="#ffffff"/>
+        </g>
+      </svg>
+
+      <h1>STOK<span>VA</span></h1>
+      <p>Gestion complète des dépôts de stockage : réceptions, expéditions, pont-bascule, traçabilité totale et exports professionnels — le tout dans une application web élégante et 100 % locale.</p>
+
+      <div class="hero-meta">
+        <span>📦 Conforme EN 07-O04</span>
+        <span>🔒 Données 100 % locales</span>
+        <span>📱 Responsive</span>
+        <span>⚡ Sans serveur</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============= MODULES ============= -->
+  <div class="section-title">Modules</div>
+  <h2 class="section-heading">Tout ce qu'il faut pour piloter votre dépôt</h2>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-icon icon-success">📥</div>
+      <h3>Réceptions</h3>
+      <p>Bons de réception (BR) numérotés automatiquement. Liaison fournisseurs, chauffeurs, matricules. Impression directe.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon icon-warning">📤</div>
+      <h3>Expéditions</h3>
+      <p>Bons de livraison (BL) avec destinations, chefs de chantier et clients. Traçabilité complète des sorties.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon icon-accent">⚖️</div>
+      <h3>Pont-bascule</h3>
+      <p>Capture poids brut/tare/net. Modes simulation, manuel ou liaison série pour ponts-bascules réels.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon icon-primary">📊</div>
+      <h3>Tableau de bord</h3>
+      <p>KPIs en temps réel, graphiques d'activité, alertes stock critique. Vue d'ensemble à 360°.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon icon-indigo">📁</div>
+      <h3>Rapports avancés</h3>
+      <p>6 types de rapports incluant le registre mensuel G0. Exports Excel et PDF avec en-tête société.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon icon-violet">🔐</div>
+      <h3>Multi-utilisateurs</h3>
+      <p>4 rôles configurables avec permissions fines : Administrateur, Responsable, Opérateur, Consultation.</p>
+    </div>
+  </div>
+
+  <!-- ============= FEATURES ============= -->
+  <div class="features-block">
+    <div class="section-title">Fonctionnalités</div>
+    <h2 class="section-heading">Pensé pour le quotidien des opérateurs</h2>
+
+    <div class="feature-list">
+      <div class="feature-item"><div class="feature-check">✓</div><div class="feature-text">Multi-dépôts avec capacité et responsable</div></div>
+      <div class="feature-item"><div class="feature-check">✓</div><div class="feature-text">Catalogue articles avec stock minimum</div></div>
+      <div class="feature-item"><div class="feature-check">✓</div><div class="feature-text">Calcul automatique du stock réel</div></div>
+      <div class="feature-item"><div class="feature-check">✓</div><div class="feature-text">Numérotation auto BR / BL / PB</div></div>
+      <div class="feature-item"><div class="feature-check">✓</div><div class="feature-text">Liaison réception ↔ pesée pont-bascule</div></div>
+      <div class="feature-item"><div class="feature-check">✓</div><div class="feature-text">Impression bons avec en-tête société</div></div>
+      <div class="feature-item"><div class="feature-check">✓</div><div class="feature-text">Filtres par période, dépôt, partenaire</div></div>
+      <div class="feature-item"><div class="feature-check">✓</div><div class="feature-text">Sauvegarde / restauration JSON</div></div>
+      <div class="feature-item"><div class="feature-check">✓</div><div class="feature-text">Mode clair / sombre élégant</div></div>
+      <div class="feature-item"><div class="feature-check">✓</div><div class="feature-text">Interface 100 % responsive</div></div>
+      <div class="feature-item"><div class="feature-check">✓</div><div class="feature-text">Données stockées localement (RGPD)</div></div>
+      <div class="feature-item"><div class="feature-check">✓</div><div class="feature-text">Conforme modèle EN 07-O04</div></div>
+    </div>
+  </div>
+
+  <!-- ============= CTA ============= -->
+  <div class="cta">
+    <h2>Prêt à démarrer ?</h2>
+    <p>Lancez l'application en double-cliquant sur <span class="mono">index.html</span>. Aucune installation, aucun serveur.</p>
+    <div class="cta-creds">
+      <span>👤</span>
+      <span>admin</span>
+      <span style="opacity:.5">/</span>
+      <span>admin</span>
+    </div>
+  </div>
+
+  <div class="footer">
+    <strong>STOKVA</strong> est une marque de <strong>NETPROCESS</strong>
+    <span class="divider">·</span> Solution professionnelle de gestion des dépôts
+    <span class="divider">·</span> © 2026 Tous droits réservés
+  </div>
+
+</div>
+</body>
+</html>

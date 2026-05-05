@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60" width="280" height="60">
+  <title>STOKVA dark</title>
+  <defs>
+    <linearGradient id="lf-d" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="rf-d" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="tf-d" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(8, 8)">
+    <polygon points="6,18 24,27 24,46 6,38" fill="url(#lf-d)"/>
+    <polygon points="24,27 42,18 42,38 24,46" fill="url(#rf-d)"/>
+    <polygon points="6,18 24,9 42,18 24,27" fill="url(#tf-d)"/>
+    <polygon points="24,16 29,21 26.5,21 26.5,25 21.5,25 21.5,21 19,21" fill="#ffffff"/>
+  </g>
+  <text x="64" y="42" font-family="'Outfit', system-ui, sans-serif" font-size="30" font-weight="800" fill="#ffffff" letter-spacing="-1">STOKVA</text>
+</svg>
