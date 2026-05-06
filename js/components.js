@@ -147,3 +147,6 @@ const Components = {
     `;
   }
 };
+
+// Export global
+window.Components = Components;

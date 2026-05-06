@@ -376,3 +376,6 @@ const Utils = {
     return _origExportPDF(arg1, arg2, arg3, arg4);
   };
 })();
+
+// Export global
+window.Utils = Utils;

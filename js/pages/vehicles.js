@@ -164,3 +164,6 @@ const VehiclesPage = {
     Utils.exportExcel(data, `Vehicules_${Utils.today()}`, 'Véhicules');
   },
 };
+
+// Export global pour app.js (les const top-level ne sont pas auto-attachees a window)
+window.VehiclesPage = VehiclesPage;

@@ -294,3 +294,6 @@ const StockPage = {
     });
   },
 };
+
+// Export global pour app.js (les const top-level ne sont pas auto-attachees a window)
+window.StockPage = StockPage;

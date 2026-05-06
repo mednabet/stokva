@@ -426,3 +426,6 @@ const WeighingPage = {
     Utils.toast('Export PDF téléchargé', 'success');
   }
 };
+
+// Export global pour app.js (les const top-level ne sont pas auto-attachees a window)
+window.WeighingPage = WeighingPage;

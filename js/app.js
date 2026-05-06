@@ -35,7 +35,12 @@ const App = {
       users: 'UsersPage',
       settings: 'SettingsPage',
     };
-    return window[map[key]];
+    const name = map[key];
+    if (!name) return null;
+    // Lookup robuste : window puis globalThis (les `const` top-level
+    // peuvent ne pas etre attachees a window selon le contexte)
+    return window[name] || globalThis[name] ||
+           (function() { try { return eval(name); } catch(e) { return null; } })();
   },
 
   init() {
@@ -236,3 +241,6 @@ window.logout = () => App.logout();
 
 // Démarrage
 document.addEventListener('DOMContentLoaded', () => App.init());
+
+// Export global
+window.App = App;

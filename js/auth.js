@@ -102,3 +102,6 @@ const Auth = {
     return (ROLES[role] || { label: role }).label;
   }
 };
+
+// Export global
+window.Auth = Auth;

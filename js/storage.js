@@ -209,3 +209,6 @@ const Storage = {
     });
   }
 };
+
+// Export global
+window.Storage = Storage;
