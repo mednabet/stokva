@@ -94,7 +94,7 @@ L'installer (le `.bat` lance le `.ps1` plus robuste) :
 1. Demande l'élévation UAC si nécessaire
 2. Détecte ou installe Node.js 20 LTS (via `winget` si dispo, sinon MSI direct depuis nodejs.org)
 3. Détecte ou installe PostgreSQL 16 (via `winget` ou EnterpriseDB installer)
-4. Génère un mot de passe aléatoire pour le superuser PostgreSQL (affiché à l'écran, à conserver pour pgAdmin)
+4. Configure le mot de passe du superuser PostgreSQL (par défaut `postgres`, modifiable via `-PostgresPassword`)
 5. Crée la base `stokva` + utilisateur applicatif + permissions
 6. Génère `.env` avec mots de passe + JWT secret aléatoires
 7. `npm install`, applique les migrations, seed les données initiales
@@ -103,12 +103,25 @@ L'installer (le `.bat` lance le `.ps1` plus robuste) :
 
 **Durée** : 5-10 min selon connexion (~300 Mo téléchargés si Node.js + PostgreSQL absents).
 
+**Mot de passe PostgreSQL par défaut** : `postgres` (le superuser PG). Pratique pour les déploiements locaux. Pour utiliser un autre mot de passe : `-PostgresPassword "monMotDePasseFort"`. Le mot de passe **applicatif** (compte `stokva`) reste lui généré aléatoirement et stocké chiffré dans `.env`.
+
+**Journal d'installation** : un fichier `logs/install-YYYY-MM-DD-HHMMSS.log` est créé à chaque exécution avec **toutes les sorties** du script (utile pour diagnostic en cas d'échec). Le chemin est rappelé en fin d'installation et automatiquement affiché en cas d'erreur fatale.
+
 **Options PowerShell** (avancé) :
 ```powershell
-.\install-windows.ps1 -Port 8000 -DbName mydb -DbUser myuser -SkipServiceInstall
+.\install-windows.ps1 -Port 8000 -DbName mydb -DbUser myuser -PostgresPassword "secret" -SkipServiceInstall -NoTranscript
 ```
 
-**Si l'installation auto échoue** (rare) : suivre les liens manuels :
+| Option              | Défaut    | Description                                        |
+|---------------------|-----------|----------------------------------------------------|
+| `-Port`             | `3000`    | Port HTTP du backend                               |
+| `-DbName`           | `stokva`  | Nom de la base PostgreSQL                          |
+| `-DbUser`           | `stokva`  | Utilisateur applicatif                             |
+| `-PostgresPassword` | `postgres`| Mot de passe du superuser PostgreSQL              |
+| `-SkipServiceInstall` | (off)   | N'installe pas le service Windows                  |
+| `-NoTranscript`     | (off)     | Désactive le journal d'installation                |
+
+**Si l'installation auto échoue** (rare) : consultez le journal `logs/install-*.log`, puis si besoin suivre les liens manuels :
 - Node.js 20+ : https://nodejs.org
 - PostgreSQL 16 : https://www.postgresql.org/download/windows/
 
@@ -303,12 +316,14 @@ Les fichiers de pont sont fournis dans `frontend-bridge/`.
 
 ## Sécurité
 
-- **Mot de passe par défaut** : `admin / admin` — **à changer immédiatement** après première connexion
-- **JWT secret** : généré aléatoirement par les scripts d'install (32 octets hex). Ne jamais le committer
+- **Mot de passe par défaut applicatif** : `admin / admin` — **à changer immédiatement** après première connexion
+- **Mot de passe PostgreSQL superuser** : `postgres` par défaut (pratique pour déploiements locaux). Pour un environnement multi-utilisateurs ou réseau, **changez-le** soit en passant `-PostgresPassword "secretFort"` à l'installeur, soit après installation via pgAdmin → propriétés du serveur → connexion → mot de passe. Note : le compte applicatif `stokva` qui accède réellement aux données STOKVA a, lui, **toujours un mot de passe aléatoire fort**, stocké dans `.env`
+- **JWT secret** : généré aléatoirement par les scripts d'install (64 caractères hex). Ne jamais le committer
 - **Rate limiting** : 30 tentatives de login par 15 min par IP
 - **Audit log** : toutes les actions sensibles (création, confirmation, annulation, login) sont enregistrées dans `audit_log` avec user/IP/timestamp
 - **Helmet + CORS** : activés
 - **HTTPS** : à configurer au niveau du reverse-proxy (nginx/Caddy/Traefik) en production
+- **Journal d'installation** : sauvegardé dans `logs/install-YYYY-MM-DD-HHMMSS.log`. Le mot de passe applicatif y apparaît en clair (généré par l'installer) — gardez ces fichiers en accès admin uniquement
 
 ### Conformité Maroc
 

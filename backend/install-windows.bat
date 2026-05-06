@@ -39,6 +39,12 @@ echo.
 echo  Duree estimee : 5-10 min (selon connexion internet)
 echo  Telechargement : ~300 Mo si Node.js + PostgreSQL absents
 echo.
+echo  Mot de passe PostgreSQL par defaut : postgres
+echo  ^(modifiable via parametre -PostgresPassword "votremdp"^)
+echo.
+echo  Un journal d'installation sera sauvegarde dans :
+echo    %~dp0logs\install-AAAA-MM-JJ-HHMMSS.log
+echo.
 pause
 
 REM Lancer le PowerShell installeur avec privileges eleves

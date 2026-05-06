@@ -4,6 +4,9 @@
 # ============================================================
 # Détecte et installe automatiquement Node.js, PostgreSQL, NSSM
 # Configure la base, applique les migrations, démarre le service.
+#
+# Journal d'installation : un fichier install-YYYY-MM-DD-HHMMSS.log
+# est genere dans le dossier logs/ pour diagnostic en cas de probleme.
 # ============================================================
 
 #Requires -Version 5.0
@@ -13,8 +16,9 @@ param(
     [string]$Port = "3000",
     [string]$DbName = "stokva",
     [string]$DbUser = "stokva",
-    [string]$PostgresPassword,    # Mot de passe superuser postgres (sinon prompt)
-    [switch]$SkipServiceInstall   # N'installe pas le service Windows
+    [string]$PostgresPassword = "postgres",  # Mot de passe superuser postgres (defaut: postgres)
+    [switch]$SkipServiceInstall,             # N'installe pas le service Windows
+    [switch]$NoTranscript                    # Desactive le journal d'installation
 )
 
 $ErrorActionPreference = "Stop"
@@ -27,6 +31,22 @@ function Write-Info { param($Msg) Write-Host " [INFO] $Msg" -ForegroundColor Cya
 function Write-Warn { param($Msg) Write-Host " [WARN] $Msg" -ForegroundColor Yellow }
 function Write-Err  { param($Msg) Write-Host " [ERREUR] $Msg" -ForegroundColor Red }
 
+# Sortie propre : stoppe le transcript et termine
+function Exit-Installer {
+    param([int]$Code = 0)
+    if ($script:LogFile) {
+        try { Stop-Transcript | Out-Null } catch { }
+        if ($Code -ne 0) {
+            Write-Host ""
+            Write-Host " Journal d'installation sauvegarde dans :" -ForegroundColor Yellow
+            Write-Host "   $($script:LogFile)" -ForegroundColor Yellow
+            Write-Host " (a joindre en cas de demande de support)" -ForegroundColor Yellow
+        }
+    }
+    Read-Host "Appuyez sur Entree pour fermer"
+    exit $Code
+}
+
 # ============================================================
 # Vérification droits administrateur
 # ============================================================
@@ -38,12 +58,38 @@ if (-not $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Adm
         "-File", "`"$($MyInvocation.MyCommand.Path)`"",
         "-Port", "`"$Port`"",
         "-DbName", "`"$DbName`"",
-        "-DbUser", "`"$DbUser`""
+        "-DbUser", "`"$DbUser`"",
+        "-PostgresPassword", "`"$PostgresPassword`""
     )
     if ($SkipServiceInstall) { $argArray += "-SkipServiceInstall" }
+    if ($NoTranscript)       { $argArray += "-NoTranscript" }
     Start-Process powershell -Verb RunAs -ArgumentList $argArray
     exit
 }
+
+# ============================================================
+# Démarrage du journal d'installation (transcript)
+# ============================================================
+$AppDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+Set-Location $AppDir
+
+$LogFile = $null
+if (-not $NoTranscript) {
+    $logsDir = Join-Path $AppDir "logs"
+    if (-not (Test-Path $logsDir)) {
+        New-Item -ItemType Directory -Path $logsDir -Force | Out-Null
+    }
+    $timestamp = Get-Date -Format "yyyy-MM-dd-HHmmss"
+    $LogFile = Join-Path $logsDir "install-$timestamp.log"
+    try {
+        Start-Transcript -Path $LogFile -IncludeInvocationHeader | Out-Null
+    } catch {
+        Write-Warn "Impossible de demarrer le journal : $($_.Exception.Message)"
+        $LogFile = $null
+    }
+}
+# Promotion explicite au scope script pour que les fonctions y aient acces
+$script:LogFile = $LogFile
 
 Write-Host ""
 Write-Host " ============================================================" -ForegroundColor Cyan
@@ -52,9 +98,27 @@ Write-Host "            Installation automatique" -ForegroundColor Cyan
 Write-Host "                  by NETPROCESS" -ForegroundColor Cyan
 Write-Host " ============================================================" -ForegroundColor Cyan
 
-$AppDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-Set-Location $AppDir
+if ($LogFile) {
+    Write-Host ""
+    Write-Info "Journal d'installation : $LogFile"
+}
+
+# Trap global : assure l'arret du transcript meme en cas d'erreur fatale
+trap {
+    Write-Err "Erreur non gere : $($_.Exception.Message)"
+    if ($LogFile) {
+        try { Stop-Transcript | Out-Null } catch { }
+        Write-Host ""
+        Write-Host " Journal d'installation sauvegarde dans : $LogFile" -ForegroundColor Yellow
+    }
+    Read-Host "Appuyez sur Entree pour fermer"
+    exit 1
+}
+
 Write-Info "Repertoire d'installation : $AppDir"
+
+# Promouvoir le mot de passe postgres dans le scope script (utilise par les fonctions)
+$script:PostgresPassword = $PostgresPassword
 
 # ============================================================
 # Détection winget
@@ -148,16 +212,20 @@ function Test-PostgreSQL {
 }
 
 function Install-PostgreSQL {
-    # Générer mot de passe superuser
-    Add-Type -AssemblyName System.Web
-    $pgPwd = [System.Web.Security.Membership]::GeneratePassword(16, 0)
-    $pgPwd = $pgPwd -replace '[''"\\\$]', 'X'  # Sécurité : retirer caractères problématiques
+    # Utiliser le mot de passe fourni en parametre (defaut: 'postgres')
+    # On filtre les caracteres problematiques pour SQL/cmd line
+    $pgPwd = $script:PostgresPassword -replace '[''"\\\$]', ''
+    if (-not $pgPwd) { $pgPwd = "postgres" }
     $script:GeneratedPostgresPwd = $pgPwd
 
     Write-Host ""
-    Write-Host "  Mot de passe genere pour le superuser 'postgres' :" -ForegroundColor Yellow
+    Write-Host "  Mot de passe pour le superuser 'postgres' :" -ForegroundColor Yellow
     Write-Host "    $pgPwd" -ForegroundColor Yellow
-    Write-Host "  Notez-le, il sera necessaire pour pgAdmin." -ForegroundColor Yellow
+    if ($pgPwd -eq "postgres") {
+        Write-Host "  (mot de passe par defaut, modifiable apres installation via pgAdmin)" -ForegroundColor Yellow
+    } else {
+        Write-Host "  (notez-le, il sera necessaire pour pgAdmin)" -ForegroundColor Yellow
+    }
     Write-Host ""
 
     if ($hasWinget) {
@@ -252,8 +320,7 @@ $node = Test-NodeJS
 if (-not $node.Found) {
     if (-not (Install-NodeJS)) {
         Write-Err "Impossible d'installer Node.js. Installez manuellement depuis https://nodejs.org"
-        Read-Host "Appuyez sur Entree pour quitter"
-        exit 1
+        Exit-Installer 1
     }
     $node = Test-NodeJS
 }
@@ -268,8 +335,7 @@ $pg = Test-PostgreSQL
 if (-not $pg.Found) {
     if (-not (Install-PostgreSQL)) {
         Write-Err "Impossible d'installer PostgreSQL."
-        Read-Host "Appuyez sur Entree pour quitter"
-        exit 1
+        Exit-Installer 1
     }
     $pg = Test-PostgreSQL
 }
@@ -280,28 +346,34 @@ Write-Ok "PostgreSQL detecte (service: $($pg.Service))"
 # ============================================================
 Write-Step "Etape 3/5 : Configuration de la base"
 
-# Mot de passe superuser
-if (-not $PostgresPassword) {
-    if ($script:GeneratedPostgresPwd) {
-        $PostgresPassword = $script:GeneratedPostgresPwd
-        Write-Ok "Utilisation du mot de passe defini lors de l'installation"
-    } else {
-        Write-Host "  Mot de passe pour le SUPERUSER PostgreSQL ('postgres')" -ForegroundColor Cyan
-        Write-Host "  (Si PostgreSQL etait deja installe, c'est celui que vous avez choisi)" -ForegroundColor Cyan
-        $secure = Read-Host "  Mot de passe postgres" -AsSecureString
-        $PostgresPassword = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
-            [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure))
-    }
+# Mot de passe superuser : si PG vient d'etre installe, utiliser celui defini.
+# Sinon, $PostgresPassword vaut "postgres" par defaut. On tentera la connexion
+# avec ce mot de passe ; si elle echoue, on demandera a l'utilisateur.
+if ($script:GeneratedPostgresPwd) {
+    $PostgresPassword = $script:GeneratedPostgresPwd
+    Write-Ok "Utilisation du mot de passe defini lors de l'installation"
 }
 
 # Test connexion
 $env:PGPASSWORD = $PostgresPassword
 $null = & psql -U postgres -h localhost -c "SELECT 1" 2>&1
 if ($LASTEXITCODE -ne 0) {
-    Write-Err "Connexion impossible avec ce mot de passe"
-    Read-Host "Appuyez sur Entree pour quitter"
-    exit 1
+    Write-Warn "Connexion impossible avec le mot de passe : $PostgresPassword"
+    Write-Host ""
+    Write-Host "  Saisissez le mot de passe du superuser 'postgres' :" -ForegroundColor Cyan
+    Write-Host "  (defini lors de l'installation precedente de PostgreSQL)" -ForegroundColor Cyan
+    $secure = Read-Host "  Mot de passe postgres" -AsSecureString
+    $PostgresPassword = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
+        [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure))
+
+    $env:PGPASSWORD = $PostgresPassword
+    $null = & psql -U postgres -h localhost -c "SELECT 1" 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Err "Mot de passe incorrect. Verifiez-le avec pgAdmin ou reinstallez PostgreSQL."
+        Exit-Installer 1
+    }
 }
+Write-Ok "Connexion PostgreSQL etablie"
 
 # Générer mot de passe applicatif
 Add-Type -AssemblyName System.Web
@@ -374,8 +446,7 @@ Write-Info "Installation des dependances npm (peut prendre 1-2 min)..."
 & npm install --omit=dev --no-audit --no-fund 2>&1 | Out-Host
 if ($LASTEXITCODE -ne 0) {
     Write-Err "npm install a echoue"
-    Read-Host "Appuyez sur Entree pour quitter"
-    exit 1
+    Exit-Installer 1
 }
 Write-Ok "Dependances installees"
 
@@ -384,8 +455,7 @@ Write-Info "Application des migrations..."
 & node scripts\migrate.js
 if ($LASTEXITCODE -ne 0) {
     Write-Err "Echec des migrations"
-    Read-Host "Appuyez sur Entree pour quitter"
-    exit 1
+    Exit-Installer 1
 }
 
 # Seed
@@ -479,19 +549,31 @@ if (-not $SkipServiceInstall) {
     Write-Host "      Demarrer : net start STOKVA" -ForegroundColor Cyan
     Write-Host "      Arreter  : net stop STOKVA" -ForegroundColor Cyan
 }
-Write-Host "    Logs            : $AppDir\logs\" -ForegroundColor Cyan
+Write-Host "    Logs runtime    : $AppDir\logs\stokva.log" -ForegroundColor Cyan
 Write-Host "    Config          : $AppDir\.env" -ForegroundColor Cyan
+if ($LogFile) {
+    Write-Host "    Journal install : $LogFile" -ForegroundColor Cyan
+}
 Write-Host ""
 
 if ($script:GeneratedPostgresPwd) {
     Write-Host "    Mot de passe PostgreSQL (superuser) :" -ForegroundColor Yellow
     Write-Host "      $($script:GeneratedPostgresPwd)" -ForegroundColor Yellow
-    Write-Host "    (notez-le pour pgAdmin)" -ForegroundColor Yellow
+    if ($script:GeneratedPostgresPwd -eq "postgres") {
+        Write-Host "    (mot de passe par defaut, modifiable via pgAdmin si souhaite)" -ForegroundColor Yellow
+    } else {
+        Write-Host "    (notez-le pour pgAdmin)" -ForegroundColor Yellow
+    }
     Write-Host ""
 }
 
 Write-Host " ============================================================" -ForegroundColor Green
 Write-Host ""
+
+# Arreter le journal d'installation
+if ($LogFile) {
+    try { Stop-Transcript | Out-Null } catch { }
+}
 
 # Ouvrir Swagger
 Start-Sleep -Seconds 3
