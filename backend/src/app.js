@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -78,6 +79,33 @@ app.use('/api/weighbridge', weighbridgeRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/config', configRoutes);
+
+// =====================================================================
+// Frontend statique
+// Le backend sert le frontend (index.html + js/ + css/ + assets/)
+// situe a la racine du repo, c'est-a-dire deux niveaux au-dessus de /src/.
+// Resultat : l'utilisateur ouvre http://localhost:3000/ et obtient l'app.
+// =====================================================================
+const FRONTEND_DIR = path.join(__dirname, '..', '..');
+app.use(express.static(FRONTEND_DIR, {
+    index: 'index.html',
+    extensions: ['html'],
+    setHeaders: (res, filePath) => {
+        // Pas de cache sur l'HTML pour avoir les MAJ tout de suite
+        if (filePath.endsWith('.html')) {
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        }
+    },
+}));
+
+// SPA fallback : toute route non-API et non-statique renvoie index.html
+// (utile si on ajoute un router cote client). Exclut /api/* et /ws.
+app.get(/^\/(?!api|ws|health).*$/, (req, res, next) => {
+    const indexFile = path.join(FRONTEND_DIR, 'index.html');
+    res.sendFile(indexFile, (err) => {
+        if (err) next();
+    });
+});
 
 // 404 + error handlers
 app.use(notFoundHandler);

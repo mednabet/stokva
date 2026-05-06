@@ -10,24 +10,23 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) · Versionnage
 
 ### 🚀 Backend Node.js + PostgreSQL multi-utilisateurs
 
-> Voir [`MIGRATION.md`](MIGRATION.md) pour le guide de migration depuis la v1 (localStorage).
+L'application STOKVA passe en mode client-serveur avec backend PostgreSQL. **Architecture unifiée** : un seul port (3000), un seul service Windows, le backend sert à la fois l'API et le frontend statique.
 
-Le frontend v1 reste **inchangé** et fonctionne toujours en mode localStorage. La v2 ajoute un backend dans `/backend` qui peut être activé sans modifier les fichiers existants.
-
-#### 🆕 Backend
-- **Node.js 20 + Express + PostgreSQL 16** dans `/backend`
-- **API REST** documentée Swagger (`/api/docs`)
-- **Authentification JWT** (access + refresh tokens, sessions persistantes)
-- **WebSocket** pour multi-utilisateurs temps réel
+#### 🆕 Backend Node.js dans `/backend`
+- **Node.js 20 + Express + PostgreSQL 16**
+- **Sert le frontend statique** sur `/` (HTML/CSS/JS/assets)
+- **API REST** sur `/api/*` documentée Swagger (`/api/docs`)
+- **WebSocket** sur `/ws` pour le temps réel
+- **Authentification JWT** (access + refresh tokens)
 - **Audit log** complet (qui/quoi/quand/IP)
-- **3 modes de déploiement** : Windows local, VPS Linux, Docker
+- **3 modes de déploiement** : Windows (auto-installer), Linux/VPS (systemd), Docker
 
 #### 🆕 11 modules backend
 - Auth, Partners, Articles, Depots, Vehicles, Receptions, Expeditions, Transfers, Weighbridge, Reports, Settings, Config
 
 #### 🆕 Pont-bascule série réelle
 - Lecture RS232/USB (Toledo, Mettler, génériques)
-- 4 modes de pesage : `simple`, `manuel`, `tare_enregistree`, `2_passes`
+- 4 modes : `simple`, `manuel`, `tare_enregistree`, `2_passes`
 - Auto-reconnexion + simulateur intégré
 
 #### 🆕 Transferts inter-dépôts
@@ -38,24 +37,45 @@ Le frontend v1 reste **inchangé** et fonctionne toujours en mode localStorage. 
 - **3 niveaux** avec cascade automatique : Article > Dépôt > Société
 - 25+ paramètres par défaut, modifiables en live (sans redéploiement)
 - **Champs personnalisés** par entité avec validation regex/min-max/conditionnel
-- Page UI de paramétrage : `backend/frontend-bridge/config.html`
 
 #### 🆕 Reporting
 - Registre G0 mensuel conforme EN 07-O04
 - Exports Excel (ExcelJS) et PDF (PDFKit)
 - Statistiques agrégées par partenaire/article/dépôt/véhicule
 
+#### 🆕 Auto-installer Windows
+- Détection automatique de Node.js, PostgreSQL, NSSM
+- Installation auto via `winget` (Windows 10 1809+) ou MSI direct
+- Génération sécurisée des mots de passe et JWT secret
+- Création du service Windows STOKVA (démarrage auto)
+
 #### 🛡️ RBAC affiné
-- 4 rôles avec contrôle granulaire par endpoint
-- Garde-fou anti-stock-négatif paramétrable
-- Rate limiting sur les routes auth
+- 4 rôles : `admin`, `responsable`, `operateur`, `consultation`
+- Garde-fou anti-stock-négatif paramétrable (avec colonne dédiée prioritaire)
+- Rate limiting sur les routes auth (30 tentatives / 15 min)
 
 #### 📦 Migrations PostgreSQL
 - 5 migrations versionnées (`backend/migrations/`)
 - Script `migrate.js` idempotent (table `_migrations`)
 - Seed automatique (admin/admin + données démo)
 
+### 🧹 Nettoyage de la v1
+
+Pour éviter toute confusion entre les modes localStorage et backend, les fichiers redondants de la v1 ont été supprimés :
+
+- ~~`install-windows.bat`~~ (racine) → remplacé par `backend/install-windows.bat`
+- ~~`start-server.bat`, `start-stokva.bat`~~ → service Windows STOKVA gère tout
+- ~~`reset-data.bat`~~ → utiliser `backend/scripts/reset-db.js`
+- ~~`push-to-github*.bat`~~ → scripts ad-hoc retirés
+- ~~`PUBLIER-SUR-GITHUB.md`, `MIGRATION.md`~~ → documentation simplifiée dans `README.md`
+- ~~`backend/frontend-bridge/login.html`~~ → doublon avec `index.html`
+- ~~`backend/frontend-bridge/storage-shim.js`~~ → mode v1/v2 unifié, plus besoin de shim
+- ~~`backend/frontend-bridge/config.html`~~ → page démo retirée
+
+Le **frontend continue de fonctionner exactement comme avant** (mode localStorage par défaut), il est juste maintenant servi par le backend Express sur le port 3000 au lieu d'un serveur Python séparé sur 8080.
+
 ---
+
 
 ## [1.0.0] — 2026-05-05
 
