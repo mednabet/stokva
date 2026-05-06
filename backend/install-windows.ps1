@@ -21,8 +21,14 @@ param(
     [switch]$NoTranscript                    # Desactive le journal d'installation
 )
 
-$ErrorActionPreference = "Stop"
-$ProgressPreference = "SilentlyContinue"  # Plus rapide pour Invoke-WebRequest
+$ErrorActionPreference = "Continue"     # Les commandes externes (npm, psql, nssm,
+                                         # winget, node) ecrivent souvent leurs
+                                         # warnings sur stderr. En mode Stop,
+                                         # PowerShell convertirait ces warnings
+                                         # en exceptions fatales. On utilise donc
+                                         # Continue + verifications explicites de
+                                         # $LASTEXITCODE apres chaque commande.
+$ProgressPreference = "SilentlyContinue" # Plus rapide pour Invoke-WebRequest
 
 # Couleurs
 function Write-Step { param($Msg) Write-Host ""; Write-Host " ============================================================" -ForegroundColor Cyan; Write-Host "   $Msg" -ForegroundColor Cyan; Write-Host " ============================================================" -ForegroundColor Cyan }
@@ -175,7 +181,7 @@ function Install-NodeJS {
     Write-Info "Telechargement de Node.js 20 LTS (~30 Mo)..."
     $msi = "$env:TEMP\node-lts.msi"
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Invoke-WebRequest -Uri "https://nodejs.org/dist/v20.18.0/node-v20.18.0-x64.msi" -OutFile $msi -UseBasicParsing
+    Invoke-WebRequest -Uri "https://nodejs.org/dist/v20.18.0/node-v20.18.0-x64.msi" -OutFile $msi -UseBasicParsing -ErrorAction Stop
 
     Write-Info "Installation silencieuse..."
     $proc = Start-Process msiexec.exe -ArgumentList "/i `"$msi`" /qn /norestart ADDLOCAL=ALL" -Wait -PassThru
@@ -249,7 +255,7 @@ function Install-PostgreSQL {
     Write-Info "Telechargement de PostgreSQL 16 (~250 Mo, peut prendre quelques minutes)..."
     $exe = "$env:TEMP\postgresql-installer.exe"
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Invoke-WebRequest -Uri "https://get.enterprisedb.com/postgresql/postgresql-16.6-1-windows-x64.exe" -OutFile $exe -UseBasicParsing
+    Invoke-WebRequest -Uri "https://get.enterprisedb.com/postgresql/postgresql-16.6-1-windows-x64.exe" -OutFile $exe -UseBasicParsing -ErrorAction Stop
 
     Write-Info "Installation silencieuse de PostgreSQL..."
     $proc = Start-Process $exe -ArgumentList @(
@@ -293,11 +299,11 @@ function Install-NSSM {
     $installDir = "C:\Program Files\nssm"
 
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Invoke-WebRequest -Uri "https://nssm.cc/release/nssm-2.24.zip" -OutFile $zip -UseBasicParsing
+    Invoke-WebRequest -Uri "https://nssm.cc/release/nssm-2.24.zip" -OutFile $zip -UseBasicParsing -ErrorAction Stop
 
     if (-not (Test-Path $installDir)) { New-Item -ItemType Directory -Path $installDir -Force | Out-Null }
-    Expand-Archive -Path $zip -DestinationPath $extractDir -Force
-    Copy-Item "$extractDir\nssm-2.24\win64\nssm.exe" "$installDir\nssm.exe" -Force
+    Expand-Archive -Path $zip -DestinationPath $extractDir -Force -ErrorAction Stop
+    Copy-Item "$extractDir\nssm-2.24\win64\nssm.exe" "$installDir\nssm.exe" -Force -ErrorAction Stop
 
     # Ajouter au PATH système (persistant)
     $machinePath = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
@@ -442,10 +448,12 @@ Set-Content -Path "$AppDir\.env" -Value $envContent -Encoding ASCII
 Write-Ok ".env genere"
 
 # npm install
+# Note : npm peut emettre des "npm warn deprecated" sur stderr ; ce ne sont pas
+# des erreurs. On verifie uniquement $LASTEXITCODE pour le statut reel.
 Write-Info "Installation des dependances npm (peut prendre 1-2 min)..."
 & npm install --omit=dev --no-audit --no-fund 2>&1 | Out-Host
 if ($LASTEXITCODE -ne 0) {
-    Write-Err "npm install a echoue"
+    Write-Err "npm install a echoue (code $LASTEXITCODE)"
     Exit-Installer 1
 }
 Write-Ok "Dependances installees"
@@ -454,13 +462,14 @@ Write-Ok "Dependances installees"
 Write-Info "Application des migrations..."
 & node scripts\migrate.js
 if ($LASTEXITCODE -ne 0) {
-    Write-Err "Echec des migrations"
+    Write-Err "Echec des migrations (code $LASTEXITCODE)"
     Exit-Installer 1
 }
 
 # Seed
 Write-Info "Donnees initiales..."
 & node scripts\seed.js
+# (seed peut echouer si admin existe deja, on n'arrete pas)
 
 # ============================================================
 # Étape 5 : Service Windows
